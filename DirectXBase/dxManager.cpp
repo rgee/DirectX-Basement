@@ -29,6 +29,21 @@ DXManager::~DXManager()
 
 bool DXManager::Initialize(HWND* hW)
 {
+    // Keyboard
+    rid[0].usUsagePage = 1;
+    rid[0].usUsage = 6;
+    rid[0].dwFlags = 0;
+    rid[0].hwndTarget = NULL;
+
+    // Mouse
+    rid[1].usUsagePage = 1;
+    rid[1].usUsage = 2;
+    rid[1].dwFlags = 0;
+    rid[1].hwndTarget = NULL;
+
+
+    RegisterRawInputDevices(rid, 2, sizeof(RAWINPUTDEVICE));
+
     hWnd = hW;
 
     RECT windowDimensions;
@@ -127,7 +142,7 @@ bool DXManager::Initialize(HWND* hW)
 
     D3D10_RASTERIZER_DESC rasterizerState;
     rasterizerState.CullMode = D3D10_CULL_NONE;
-    rasterizerState.FillMode = D3D10_FILL_WIREFRAME;
+    rasterizerState.FillMode = D3D10_FILL_SOLID;
     rasterizerState.FrontCounterClockwise = true;
     rasterizerState.DepthBias = false;
     rasterizerState.DepthBiasClamp = 0;
@@ -192,8 +207,8 @@ bool DXManager::Initialize(HWND* hW)
 
 
 
-    D3DXMatrixLookAtLH(&viewMatrix, new D3DXVECTOR3(0.0f, 650.0f, 1500.0f),
-                                    new D3DXVECTOR3(0.0f, -200.0f, 0.0f),
+    D3DXMatrixLookAtLH(&viewMatrix, new D3DXVECTOR3(0.0f, 350.0f, 200.0f),
+                                    new D3DXVECTOR3(0.0f, 200.0f, 0.0f),
                                     new D3DXVECTOR3(0.0f, 1.0f, 0.0f));
     D3DXMatrixPerspectiveFovLH(&projectionMatrix, (float)D3DX_PI * 0.5f, (float)width/(float)height, 0.1f, 3000.0f);
 
@@ -210,7 +225,7 @@ bool DXManager::InitializeScene()
     D3DXMATRIX terrainPos;
     D3DXMatrixTranslation(&terrainPos, 0.0f, 200.0f, -900.0f);
 
-    pTerrain = new Terrain(800, 800, terrainPos, pD3DDevice);
+    pTerrain = new Terrain(80, 80, terrainPos, pD3DDevice);
 
     
 	return true;
@@ -261,4 +276,33 @@ bool DXManager::LoadTextures()
         }
     }
     return true;
+}
+
+void DXManager::ProcessMessage(UINT msg, LPARAM lparam)
+{
+    switch(msg)
+    {
+    case WM_INPUT:
+        UINT bufferSize;
+        GetRawInputData((HRAWINPUT)lparam, RID_INPUT, NULL, &bufferSize, sizeof(RAWINPUTHEADER));
+
+        BYTE* buffer = new BYTE[bufferSize];
+
+        GetRawInputData((HRAWINPUT)lparam, RID_INPUT, (LPVOID)buffer, &bufferSize, sizeof(RAWINPUTHEADER));
+
+        RAWINPUT* raw = (RAWINPUT*)buffer;
+        if(raw->header.dwType == RIM_TYPEMOUSE)
+        {   
+            long mx = raw->data.mouse.lLastX;
+            long my = raw->data.mouse.lLastY;
+
+            if(raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN)
+            {
+            }
+        }
+        if(raw->header.dwType == RIM_TYPEKEYBOARD)
+        {
+        }
+        break;
+    }
 }

@@ -23,6 +23,9 @@ public:
     /* Render the current scene. */
     void Render();
 
+    /* Process a windows message */
+    void ProcessMessage(UINT message, LPARAM lparam);
+
 private:
 
     HWND* hWnd;
@@ -80,6 +83,8 @@ private:
 
     /* Terrain object for testing */
     Terrain* pTerrain;
+
+    RAWINPUTDEVICE rid[2];
 
     /************************
      * Private Methods

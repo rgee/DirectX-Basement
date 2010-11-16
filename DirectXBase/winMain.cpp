@@ -21,7 +21,6 @@ LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch(message)
     {
-
         case WM_KEYDOWN:
             switch(wParam)
             {
@@ -34,6 +33,8 @@ LRESULT CALLBACK wndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_DESTROY: PostQuitMessage(0);
         break;
     }
+
+    dx.ProcessMessage(message, lParam);
 
     /* Pass the events on out of the application. */
     return DefWindowProc(hWnd, message, wParam, lParam);
