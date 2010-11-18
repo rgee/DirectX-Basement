@@ -8,6 +8,7 @@
 #include <d3dx10.h>
 #include "vertex.h"
 #include "Terrain.h"
+#include "Camera.h"
 
 
 /* Manager class for interactions with DirectX */
@@ -22,6 +23,9 @@ public:
 
     /* Render the current scene. */
     void Render();
+
+    /* Update the state of the scene */
+    void Update();
 
     /* Process a windows message */
     void ProcessMessage(UINT message, LPARAM lparam);
@@ -86,6 +90,8 @@ private:
 
     RAWINPUTDEVICE rid[2];
 
+    Camera camera;
+
     /************************
      * Private Methods
      ************************/
@@ -95,6 +101,8 @@ private:
 
     bool InitializeScene();
 
+    long last_mouse_x;
+    long last_mouse_y;
 };
 
 #endif

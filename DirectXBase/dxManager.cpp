@@ -12,6 +12,7 @@ DXManager::DXManager()
     D3DXMatrixIdentity(&worldMatrix);
 	D3DXMatrixIdentity(&projectionMatrix);
 	D3DXMatrixIdentity(&viewMatrix);
+    
 }
 
 DXManager::~DXManager()
@@ -63,7 +64,7 @@ bool DXManager::Initialize(HWND* hW)
     swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
     swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
     swapChainDesc.SampleDesc.Count = 1;
-    swapChainDesc.SampleDesc.Quality = 0;
+    swapChainDesc.SampleDesc.Quality = 4;
     swapChainDesc.OutputWindow = *hWnd;
     swapChainDesc.Windowed = true;
 
@@ -149,7 +150,7 @@ bool DXManager::Initialize(HWND* hW)
     rasterizerState.SlopeScaledDepthBias = 0;
     rasterizerState.DepthClipEnable = true;
     rasterizerState.ScissorEnable = false;
-    rasterizerState.MultisampleEnable = false;
+    rasterizerState.MultisampleEnable = true;
     rasterizerState.AntialiasedLineEnable = true;
 
     ID3D10RasterizerState* pRasterState;
@@ -206,14 +207,17 @@ bool DXManager::Initialize(HWND* hW)
     pD3DDevice->OMSetRenderTargets(1, &pRenderTargetView, pDepthStencilView);
 
 
-
+    /*
     D3DXMatrixLookAtLH(&viewMatrix, new D3DXVECTOR3(0.0f, 350.0f, 200.0f),
                                     new D3DXVECTOR3(0.0f, 200.0f, 0.0f),
                                     new D3DXVECTOR3(0.0f, 1.0f, 0.0f));
     D3DXMatrixPerspectiveFovLH(&projectionMatrix, (float)D3DX_PI * 0.5f, (float)width/(float)height, 0.1f, 3000.0f);
+    */
+    camera.SetPositionAndView(0,0,0,-20.0f, -20.0f);
+    camera.SetPerspectiveProjection(45.0f, (float)width/(float)height, 0.1f, 3000.0f);
 
-    pProjMatrixEffectVar->SetMatrix(projectionMatrix);
-    pViewMatrixEffectVar->SetMatrix(viewMatrix);
+    pProjMatrixEffectVar->SetMatrix(*camera.GetProjectionMatrix());
+    pViewMatrixEffectVar->SetMatrix(*camera.GetViewMatrix());
 
     InitializeScene();
 
@@ -223,12 +227,18 @@ bool DXManager::Initialize(HWND* hW)
 bool DXManager::InitializeScene()
 {
     D3DXMATRIX terrainPos;
-    D3DXMatrixTranslation(&terrainPos, 0.0f, 200.0f, -900.0f);
+    D3DXMatrixTranslation(&terrainPos, 0.0f, 0.0f, 100.0f);
 
-    pTerrain = new Terrain(80, 80, terrainPos, pD3DDevice);
-
+    pTerrain = new Terrain(200, 200, terrainPos, pD3DDevice);
     
 	return true;
+}
+
+void DXManager::Update()
+{
+    camera.Update();
+    pProjMatrixEffectVar->SetMatrix(*camera.GetProjectionMatrix());
+    pViewMatrixEffectVar->SetMatrix(*camera.GetViewMatrix());
 }
 
 void DXManager::Render()
@@ -236,10 +246,6 @@ void DXManager::Render()
     pD3DDevice->ClearRenderTargetView( pRenderTargetView, D3DXCOLOR(0,0,0,0));
     pD3DDevice->ClearDepthStencilView( pDepthStencilView, D3D10_CLEAR_DEPTH, 1.0f, 0 );
 
-    static float r = 0;
-	r += 0.0001f;
-
-    D3DXMatrixRotationY(&worldMatrix, r);
     pWorldMatrixEffectVar->SetMatrix(worldMatrix);
     for(UINT pass = 0; pass < techDesc.Passes; pass++)
     {
@@ -291,18 +297,53 @@ void DXManager::ProcessMessage(UINT msg, LPARAM lparam)
         GetRawInputData((HRAWINPUT)lparam, RID_INPUT, (LPVOID)buffer, &bufferSize, sizeof(RAWINPUTHEADER));
 
         RAWINPUT* raw = (RAWINPUT*)buffer;
+
         if(raw->header.dwType == RIM_TYPEMOUSE)
         {   
             long mx = raw->data.mouse.lLastX;
             long my = raw->data.mouse.lLastY;
 
-            if(raw->data.mouse.ulButtons & RI_MOUSE_LEFT_BUTTON_DOWN)
-            {
-            }
+            camera.AdjustYawPitch(mx*0.005f, my*0.005f );
         }
         if(raw->header.dwType == RIM_TYPEKEYBOARD)
         {
+            USHORT keyCode = raw->data.keyboard.VKey;
+            bool keyUp = raw->data.keyboard.Flags & RI_KEY_BREAK;
+
+            if(keyUp) {
+                switch(keyCode)
+                {
+                case 0x57:
+                    camera.SetMovementToggles(0, 0.0f);
+                    break;
+                case 0x53:
+                    camera.SetMovementToggles(1, 0.0f);
+                    break;
+                case 0x41:
+                    camera.SetMovementToggles(2, 0.0f);
+                    break;
+                case 0x44:
+                    camera.SetMovementToggles(3, 0.0f);
+                }
+
+            } else {
+                switch(keyCode)
+                {
+                case 0x57:
+                    camera.SetMovementToggles(0, 50.0f);
+                    break;
+                case 0x53:
+                    camera.SetMovementToggles(1, -50.0f);
+                    break;
+                case 0x41:
+                    camera.SetMovementToggles(2, -50.0f);
+                    break;
+                case 0x44:
+                    camera.SetMovementToggles(3, 50.0f);
+                }
+            }
         }
+        SetCursorPos(0.0f, 0.0f);
         break;
     }
 }

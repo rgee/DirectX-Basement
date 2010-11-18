@@ -79,7 +79,7 @@ bool initWindow(HWND &hWnd, HINSTANCE hInstance, int windowWidth, int height)
     if (!hWnd) {
         return false;
     }
-
+    ShowCursor(false);
     ShowWindow(hWnd, SW_SHOW);
     UpdateWindow(hWnd);
     return true;
@@ -106,6 +106,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
+        dx.Update();
         dx.Render();
     }
     return (int)msg.wParam;
