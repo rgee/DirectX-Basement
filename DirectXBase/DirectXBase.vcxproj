@@ -39,6 +39,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>C:\Program Files\Assimp\include\;C:\Program Files\GnuWin32\include;C:\Program Files\FMOD SoundSystem\FMOD Programmers API Win32\api\inc;C:\Program Files\Microsoft DirectX SDK (February 2010)\Include;C:\Program Files\Microsoft SDKs\Windows\v6.0A\Include;E:\Programming Projects\SDL;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files\Assimp\lib\x86;C:\Program Files\GnuWin32\lib;C:\Program Files\FMOD SoundSystem\FMOD Programmers API Win32\api\lib;C:\Program Files\Microsoft DirectX SDK (February 2010)\Lib\x86;C:\Program Files\Microsoft SDKs\Windows\v6.0A\Lib;E:\Programming Projects\SDL-1.2.14\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -56,7 +58,7 @@
       <SubSystem>
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d10.lib;d3dx10.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>assimp.lib;d3d10.lib;d3dx10.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -77,20 +79,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="dxManager.cpp" />
     <ClCompile Include="HashedString.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="winMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="dxManager.h" />
     <ClInclude Include="EventManager.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="HashedString.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MHRTimer.h" />
     <ClInclude Include="Terrain.h" />
     <ClInclude Include="vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\assets\sphere.nff" />
     <None Include="simple_shader.fx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

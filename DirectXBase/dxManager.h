@@ -9,6 +9,7 @@
 #include "vertex.h"
 #include "Terrain.h"
 #include "Camera.h"
+#include "Mesh.h"
 
 
 /* Manager class for interactions with DirectX */
@@ -90,6 +91,7 @@ private:
 
     RAWINPUTDEVICE rid[2];
 
+    Mesh* testMesh;
     Camera camera;
 
     /************************

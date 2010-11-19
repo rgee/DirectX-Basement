@@ -32,6 +32,7 @@ void Terrain::GenerateMesh()
             D3DXVec3Transform(&transformed, &D3DXVECTOR3(x, y, z), &positionMatrix);
             vertices[int(i * fieldWidth + j)].position = D3DXVECTOR3(transformed.x, transformed.y, transformed.z);
 
+            /*
             if(y < -15.0f) {
                 vertices[int(i * fieldDepth + j)].color = DRK_BLUE;
             } else if( y < -5.0f) {
@@ -45,7 +46,7 @@ void Terrain::GenerateMesh()
             } else {
                 vertices[int(i * fieldDepth + j)].color = WHITE;
             }
-
+            */
             
         }
     }

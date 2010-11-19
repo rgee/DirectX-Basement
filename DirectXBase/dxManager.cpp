@@ -64,7 +64,7 @@ bool DXManager::Initialize(HWND* hW)
     swapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
     swapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
     swapChainDesc.SampleDesc.Count = 1;
-    swapChainDesc.SampleDesc.Quality = 4;
+    swapChainDesc.SampleDesc.Quality = 6;
     swapChainDesc.OutputWindow = *hWnd;
     swapChainDesc.Windowed = true;
 
@@ -175,7 +175,7 @@ bool DXManager::Initialize(HWND* hW)
     pBackBuffer->Release();
     
 
-    	//create depth stencil texture
+    /* create depth stencil texture */
     D3D10_TEXTURE2D_DESC descDepth;
     descDepth.Width = width;
     descDepth.Height = height;
@@ -206,13 +206,6 @@ bool DXManager::Initialize(HWND* hW)
     /* Bind render target to the pipeline */
     pD3DDevice->OMSetRenderTargets(1, &pRenderTargetView, pDepthStencilView);
 
-
-    /*
-    D3DXMatrixLookAtLH(&viewMatrix, new D3DXVECTOR3(0.0f, 350.0f, 200.0f),
-                                    new D3DXVECTOR3(0.0f, 200.0f, 0.0f),
-                                    new D3DXVECTOR3(0.0f, 1.0f, 0.0f));
-    D3DXMatrixPerspectiveFovLH(&projectionMatrix, (float)D3DX_PI * 0.5f, (float)width/(float)height, 0.1f, 3000.0f);
-    */
     camera.SetPositionAndView(0,0,0,-20.0f, -20.0f);
     camera.SetPerspectiveProjection(45.0f, (float)width/(float)height, 0.1f, 3000.0f);
 
@@ -229,7 +222,7 @@ bool DXManager::InitializeScene()
     D3DXMATRIX terrainPos;
     D3DXMatrixTranslation(&terrainPos, 0.0f, 0.0f, 100.0f);
 
-    pTerrain = new Terrain(200, 200, terrainPos, pD3DDevice);
+    testMesh = new Mesh("../assets/sphere.nff", pD3DDevice);
     
 	return true;
 }
@@ -245,12 +238,19 @@ void DXManager::Render()
 {
     pD3DDevice->ClearRenderTargetView( pRenderTargetView, D3DXCOLOR(0,0,0,0));
     pD3DDevice->ClearDepthStencilView( pDepthStencilView, D3D10_CLEAR_DEPTH, 1.0f, 0 );
+    UINT subsets = 0;
 
     pWorldMatrixEffectVar->SetMatrix(worldMatrix);
     for(UINT pass = 0; pass < techDesc.Passes; pass++)
     {
         pBasicTechnique->GetPassByIndex(pass)->Apply(0);
-        pTerrain->GetMesh()->DrawSubset(0);
+
+        testMesh->GetMesh()->GetAttributeTable(NULL, &subsets);
+
+        for(UINT subset = 0; subset < subsets; subset++)
+        {
+            testMesh->GetMesh()->DrawSubset(subset);
+        }
     }     
     pSwapChain->Present(0,0);
 

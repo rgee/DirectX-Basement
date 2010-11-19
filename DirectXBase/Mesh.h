@@ -16,6 +16,8 @@ class Mesh
 public:
     Mesh(const std::string& filename, ID3D10Device* device);
     ~Mesh();
+
+    ID3DX10Mesh* GetMesh();
 private:
     void LoadFromFile(const std::string& filename);
 

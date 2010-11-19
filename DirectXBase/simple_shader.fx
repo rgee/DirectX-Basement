@@ -10,6 +10,10 @@ SamplerState linearSampler
 	AddressV = Wrap;
 };
 
+float3 lightDir = float3(0, 50, 10);
+float4 lightColor = float4(0.6, 0.2, 0.2, 1.0);
+float4 ambientLight = float4(0.02, 0.02, 0.02, 1.0);
+
 matrix World;
 matrix View;
 matrix Projection;
@@ -17,13 +21,13 @@ matrix Projection;
 struct PS_INPUT
 {
 	float4 Pos : SV_POSITION;
-	float4 Color : COLOR;
+	float3 Normal : TEXCOORD0;
 };
 
 struct VS_INPUT
 {
 	float4 Pos : POSITION;
-	float4 Color : COLOR;
+	float3 Normal : NORMAL;
 };
 
 PS_INPUT VS(VS_INPUT input)
@@ -33,19 +37,30 @@ PS_INPUT VS(VS_INPUT input)
 	output.Pos = mul( input.Pos, World );
     output.Pos = mul( output.Pos, View );    
     output.Pos = mul( output.Pos, Projection );
-	output.Color = input.Color;
+	output.Normal = mul(input.Normal, World);
+
 	
     return output;  
 }
 
 float4 textured( PS_INPUT input ) : SV_Target
 {
-    return input.Color;
+	float4 finalColor = 0;
+	
+	finalColor = saturate(dot(normalize(lightDir), input.Normal) * lightColor + ambientLight);
+	finalColor.a = 1.0;
+
+	return finalColor;
 }
 
 float4 noTexture( PS_INPUT input ) : SV_Target
 {
-    return input.Color; 
+	float4 finalColor = 0;
+	
+	finalColor = saturate(dot(lightDir, input.Normal) * lightColor);
+	finalColor.a = 1.0;
+
+	return finalColor;
 }
 
 technique10 full
