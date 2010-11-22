@@ -92,7 +92,10 @@ private:
     RAWINPUTDEVICE rid[2];
 
     Mesh* testMesh;
+    Mesh* sphere;
     Camera camera;
+
+    ID3D10ShaderResourceView* floorTexture;
 
     /************************
      * Private Methods

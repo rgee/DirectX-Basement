@@ -222,8 +222,13 @@ bool DXManager::InitializeScene()
     D3DXMATRIX terrainPos;
     D3DXMatrixTranslation(&terrainPos, 0.0f, 0.0f, 100.0f);
 
-    testMesh = new Mesh("../assets/sphere.nff", pD3DDevice);
+    testMesh = new Mesh("../assets/floor.obj", pD3DDevice);
+    sphere = new Mesh("../assets/bird.3ds", pD3DDevice);
+       
     
+
+    LoadTextures();
+
 	return true;
 }
 
@@ -236,22 +241,53 @@ void DXManager::Update()
 
 void DXManager::Render()
 {
+    static float sphereRot = 0.0f;
+    sphereRot += 0.001f;
+
+
+    D3DXMatrixTransformation(sphere->WorldMatrix(), NULL, NULL, NULL, NULL, NULL, &D3DXVECTOR3(0,-10,0));
+
+    D3DXMATRIX scaling;
+    D3DXMatrixScaling(&scaling, 2.0f, 2.0f, 2.0f);
+
+
+
+    //D3DXMatrixRotationZ(sphere->WorldMatrix(), sphereRot);
+    //D3DXMatrixRotationZ(testMesh->WorldMatrix(), -sphereRot);
+
     pD3DDevice->ClearRenderTargetView( pRenderTargetView, D3DXCOLOR(0,0,0,0));
     pD3DDevice->ClearDepthStencilView( pDepthStencilView, D3D10_CLEAR_DEPTH, 1.0f, 0 );
     UINT subsets = 0;
 
-    pWorldMatrixEffectVar->SetMatrix(worldMatrix);
+   //pWorldMatrixEffectVar->SetMatrix(worldMatrix);
+    
+    pTextureSR->SetResource(floorTexture);
+
     for(UINT pass = 0; pass < techDesc.Passes; pass++)
     {
         pBasicTechnique->GetPassByIndex(pass)->Apply(0);
+        
+        
+        sphere->GetMesh()->GetAttributeTable(NULL, &subsets);
+        pWorldMatrixEffectVar->SetMatrix(scaling * (*sphere->WorldMatrix())); 
+        for(UINT subset = 0; subset < subsets; subset++)
+        {
+            sphere->GetMesh()->DrawSubset(subset);
+        }
+
+        pBasicTechnique->GetPassByIndex(0)->Apply(0);
 
         testMesh->GetMesh()->GetAttributeTable(NULL, &subsets);
-
+        pWorldMatrixEffectVar->SetMatrix((*testMesh->WorldMatrix()));
         for(UINT subset = 0; subset < subsets; subset++)
         {
             testMesh->GetMesh()->DrawSubset(subset);
-        }
-    }     
+        }  
+     
+    }
+
+
+
     pSwapChain->Present(0,0);
 
 }
@@ -264,22 +300,11 @@ bool DXManager::FatalError(LPCSTR msg)
 
 bool DXManager::LoadTextures()
 {
-    std::vector<std::string> filenames;
-    filenames.push_back("textures/t1.bmp");
-    filenames.push_back("textures/t2.bmp");
-	filenames.push_back("textures/t3.bmp");
-
-    for(int i=0; i < (int)filenames.size(); i++)
+    if(FAILED(D3DX10CreateShaderResourceViewFromFile(pD3DDevice, "../assets/marblefloor.jpg", NULL, NULL, &floorTexture, NULL)))
     {
-        textureSRV.push_back(NULL);
-        
-        /* Create the texture and its view */
-        if(FAILED(D3DX10CreateShaderResourceViewFromFile(pD3DDevice, filenames[i].c_str(), NULL, NULL, &textureSRV[i], NULL)))
-        {
-            char err[256];
-            sprintf_s(err, "Could not load texture: %s!", filenames[i].c_str());
-            return FatalError(err);
-        }
+        char err[256];
+        sprintf_s(err, "Could not load texture: %s!","../assets/marblefloor.jpg");
+        return FatalError(err);
     }
     return true;
 }

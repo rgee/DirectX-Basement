@@ -18,11 +18,13 @@ public:
     ~Mesh();
 
     ID3DX10Mesh* GetMesh();
+    D3DXMATRIX* WorldMatrix();
 private:
     void LoadFromFile(const std::string& filename);
 
     ID3DX10Mesh* mesh;
     ID3D10Device* device;
+    D3DXMATRIX worldMatrix;
 };
 
 
