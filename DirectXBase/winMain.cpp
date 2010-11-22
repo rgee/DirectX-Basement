@@ -10,8 +10,8 @@
 
 /* Window handle */
 HWND hWnd;
-int windowHeight = 900;
-int windowWidth = 1440;
+int windowHeight = 600;
+int windowWidth = 800;
 bool texturesEnabled = true;
 
 /* DirectX Manager */

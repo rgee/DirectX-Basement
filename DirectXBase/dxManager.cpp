@@ -106,8 +106,6 @@ bool DXManager::Initialize(HWND* hW)
     pTextureSR = pBasicEffect->GetVariableByName("tex2D")->AsShaderResource();
 
 
-    
-
     D3D10_PASS_DESC passDesc;
     pBasicTechnique->GetPassByIndex(0)->GetDesc(&passDesc);
     /* Create and set the input layout */
@@ -222,10 +220,15 @@ bool DXManager::InitializeScene()
     D3DXMATRIX terrainPos;
     D3DXMatrixTranslation(&terrainPos, 0.0f, 0.0f, 100.0f);
 
-    testMesh = new Mesh("../assets/floor.obj", pD3DDevice);
+    testMesh = new Mesh("../assets/sphere.nff", pD3DDevice);
     sphere = new Mesh("../assets/bird.3ds", pD3DDevice);
+
+    PointLight light;
+    light.position = D3DXVECTOR3(0, 100, 0);
+    light.color = D3DXVECTOR4(0.5f, 0.9f, 0.2f, 1.0f);
        
-    
+    ID3D10EffectVariable* pVar = pBasicEffect->GetVariableByName("light");
+    pVar->SetRawValue(&light, 0, sizeof(PointLight));
 
     LoadTextures();
 
@@ -234,6 +237,7 @@ bool DXManager::InitializeScene()
 
 void DXManager::Update()
 {
+    sphereRot += 0.001f;
     camera.Update();
     pProjMatrixEffectVar->SetMatrix(*camera.GetProjectionMatrix());
     pViewMatrixEffectVar->SetMatrix(*camera.GetViewMatrix());
@@ -241,18 +245,19 @@ void DXManager::Update()
 
 void DXManager::Render()
 {
-    static float sphereRot = 0.0f;
-    sphereRot += 0.001f;
 
 
-    D3DXMatrixTransformation(sphere->WorldMatrix(), NULL, NULL, NULL, NULL, NULL, &D3DXVECTOR3(0,-10,0));
 
+    D3DXMatrixTransformation(sphere->WorldMatrix(), NULL, NULL, NULL, NULL, NULL, &D3DXVECTOR3(100,200,0));
+    D3DXMatrixTransformation(testMesh->WorldMatrix(), NULL, NULL, NULL, NULL, NULL, &D3DXVECTOR3(0,300,0));
     D3DXMATRIX scaling;
-    D3DXMatrixScaling(&scaling, 2.0f, 2.0f, 2.0f);
+    D3DXMatrixScaling(&scaling, 0.5f, 0.5f, 0.5f);
+    D3DXMATRIX rot;
+    //D3DXMatrixRotationZ(&rot, sphereRot);
 
 
 
-    //D3DXMatrixRotationZ(sphere->WorldMatrix(), sphereRot);
+
     //D3DXMatrixRotationZ(testMesh->WorldMatrix(), -sphereRot);
 
     pD3DDevice->ClearRenderTargetView( pRenderTargetView, D3DXCOLOR(0,0,0,0));
@@ -261,32 +266,37 @@ void DXManager::Render()
 
    //pWorldMatrixEffectVar->SetMatrix(worldMatrix);
     
-    pTextureSR->SetResource(floorTexture);
+    
 
     for(UINT pass = 0; pass < techDesc.Passes; pass++)
     {
-        pBasicTechnique->GetPassByIndex(pass)->Apply(0);
-        
-        
-        sphere->GetMesh()->GetAttributeTable(NULL, &subsets);
-        pWorldMatrixEffectVar->SetMatrix(scaling * (*sphere->WorldMatrix())); 
-        for(UINT subset = 0; subset < subsets; subset++)
-        {
-            sphere->GetMesh()->DrawSubset(subset);
-        }
-
+        pTextureSR->SetResource(floorTexture);
+        pWorldMatrixEffectVar->SetMatrix((*testMesh->WorldMatrix()));
         pBasicTechnique->GetPassByIndex(0)->Apply(0);
 
         testMesh->GetMesh()->GetAttributeTable(NULL, &subsets);
-        pWorldMatrixEffectVar->SetMatrix((*testMesh->WorldMatrix()));
+
         for(UINT subset = 0; subset < subsets; subset++)
         {
             testMesh->GetMesh()->DrawSubset(subset);
         }  
+
+
+
+
      
     }
+        pTextureSR->SetResource(floorTexture);
+        pWorldMatrixEffectVar->SetMatrix((*sphere->WorldMatrix())); 
+        pBasicTechnique->GetPassByIndex(0)->Apply(0);
+        
+        
+        sphere->GetMesh()->GetAttributeTable(NULL, &subsets);
 
-
+        for(UINT subset = 0; subset < subsets; subset++)
+        {
+            sphere->GetMesh()->DrawSubset(subset);
+        }
 
     pSwapChain->Present(0,0);
 

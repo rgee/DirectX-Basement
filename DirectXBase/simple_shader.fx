@@ -10,13 +10,27 @@ SamplerState linearSampler
 	AddressV = Wrap;
 };
 
-float3 lightDir = float3(0, 50, 10);
+
+struct PointLight
+{
+	float3 Pos;
+	float4 Color;
+};
+
+float3 lightDir = float3(0, 0, 10);
 float4 lightColor = float4(0.9, 0.2, 0.2, 1.0);
 float4 ambientLight = float4(0.02, 0.02, 0.02, 1.0);
+float3 lightPosition = float3(0, 50, 10);
+
+float3 lightDir2 = float3(0, 0, -10);
+
+float lightIntensity = 1.9;
 
 matrix World;
 matrix View;
 matrix Projection;
+
+PointLight light;
 
 struct PS_INPUT
 {
@@ -32,6 +46,8 @@ struct VS_INPUT
 	float2 Tex : TEXCOORD0;
 };
 
+
+
 PS_INPUT VS(VS_INPUT input)
 {
 	PS_INPUT output;
@@ -39,7 +55,7 @@ PS_INPUT VS(VS_INPUT input)
 	output.Pos = mul( input.Pos, World );
     output.Pos = mul( output.Pos, View );    
     output.Pos = mul( output.Pos, Projection );
-	output.Normal = mul(input.Normal, World);
+	output.Normal = normalize(mul(input.Normal, World));
 	output.Tex = input.Tex;
 
 	
@@ -50,9 +66,15 @@ float4 textured( PS_INPUT input ) : SV_Target
 {
 	float4 finalColor = 0;
 	
-	//finalColor = saturate(dot(normalize(lightDir), input.Normal) * tex2D.Sample(linearSampler, input.Tex)) + ambientLight;
+	float3 toLight = light.Pos - input.Pos;
+	float attenuation = saturate(1.0 - pow(length(toLight), 2.0));
 
-	finalColor = tex2D.Sample(linearSampler, input.Tex);
+	finalColor = saturate( dot(normalize(-toLight), normalize(input.Normal)) * tex2D.Sample(linearSampler, input.Tex)) ;
+
+	//finalColor = finalColor + saturate(dot(normalize(lightDir2), normalize(input.Normal)) * tex2D.Sample(linearSampler, input.Tex)) * lightIntensity;
+
+
+	//finalColor = tex2D.Sample(linearSampler, input.Tex);
 	finalColor.a = 1.0;
 
 	return finalColor;

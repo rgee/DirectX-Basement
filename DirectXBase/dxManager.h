@@ -10,6 +10,7 @@
 #include "Terrain.h"
 #include "Camera.h"
 #include "Mesh.h"
+#include "Light_Types.h"
 
 
 /* Manager class for interactions with DirectX */
@@ -96,6 +97,8 @@ private:
     Camera camera;
 
     ID3D10ShaderResourceView* floorTexture;
+
+    float sphereRot;
 
     /************************
      * Private Methods

@@ -38,7 +38,7 @@ void Mesh::LoadFromFile(const std::string& filename)
         aiProcess_SortByPType |
         aiProcess_FixInfacingNormals |
         aiProcess_MakeLeftHanded |
-        aiProcess_GenNormals |
+        aiProcess_GenSmoothNormals |
         aiProcess_FindInvalidData |
         aiProcess_GenUVCoords |
         aiProcess_OptimizeGraph |
