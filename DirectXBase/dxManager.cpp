@@ -86,7 +86,7 @@ bool DXManager::Initialize(HWND* hW)
                                                NULL,
                                                NULL,
                                                "fx_4_0",
-                                               D3D10_SHADER_ENABLE_STRICTNESS,
+                                               D3D10_SHADER_ENABLE_STRICTNESS | D3D10_SHADER_DEBUG | D3D10_SHADER_SKIP_OPTIMIZATION,
                                                0,
                                                pD3DDevice,
                                                NULL,
@@ -104,6 +104,7 @@ bool DXManager::Initialize(HWND* hW)
     pProjMatrixEffectVar = pBasicEffect->GetVariableByName("Projection")->AsMatrix();
     pWorldMatrixEffectVar = pBasicEffect->GetVariableByName("World")->AsMatrix();
     pTextureSR = pBasicEffect->GetVariableByName("tex2D")->AsShaderResource();
+    pWorldInverseTransposeEffectVar = pBasicEffect->GetVariableByName("WorldInverseTranspose")->AsMatrix();
 
 
     D3D10_PASS_DESC passDesc;
@@ -140,7 +141,7 @@ bool DXManager::Initialize(HWND* hW)
 
 
     D3D10_RASTERIZER_DESC rasterizerState;
-    rasterizerState.CullMode = D3D10_CULL_NONE;
+    rasterizerState.CullMode = D3D10_CULL_BACK;
     rasterizerState.FillMode = D3D10_FILL_SOLID;
     rasterizerState.FrontCounterClockwise = true;
     rasterizerState.DepthBias = false;
@@ -220,17 +221,20 @@ bool DXManager::InitializeScene()
     D3DXMATRIX terrainPos;
     D3DXMatrixTranslation(&terrainPos, 0.0f, 0.0f, 100.0f);
 
-    testMesh = new Mesh("../assets/sphere.nff", pD3DDevice);
-    sphere = new Mesh("../assets/bird.3ds", pD3DDevice);
+    pTerrain = new Terrain(80, 80, terrainPos, pD3DDevice);
 
-    PointLight light;
-    light.position = D3DXVECTOR3(0, 100, 0);
-    light.color = D3DXVECTOR4(0.5f, 0.9f, 0.2f, 1.0f);
+    sphere = new Mesh("../assets/sphere.nff", pD3DDevice);
+    testMesh = new Mesh("../assets/floor.obj", pD3DDevice);
+
+
+    light.position = D3DXVECTOR3(0, 30, 0);
+    light.color = D3DXVECTOR4(0.9f, 0.9f, 0.9f, 1.0f);
        
-    ID3D10EffectVariable* pVar = pBasicEffect->GetVariableByName("light");
-    pVar->SetRawValue(&light, 0, sizeof(PointLight));
+    LightVar = pBasicEffect->GetVariableByName("light");
+    
 
     LoadTextures();
+    pTextureSR->SetResource(floorTexture);
 
 	return true;
 }
@@ -238,6 +242,11 @@ bool DXManager::InitializeScene()
 void DXManager::Update()
 {
     sphereRot += 0.001f;
+
+    light.position = D3DXVECTOR3(20, 30, 45) + D3DXVECTOR3(0,15*sin(sphereRot)*0.5,0);
+    //light.position = camera.GetPosition();
+    LightVar->SetRawValue(&light, 0, sizeof(PointLight));
+
     camera.Update();
     pProjMatrixEffectVar->SetMatrix(*camera.GetProjectionMatrix());
     pViewMatrixEffectVar->SetMatrix(*camera.GetViewMatrix());
@@ -245,49 +254,25 @@ void DXManager::Update()
 
 void DXManager::Render()
 {
-
-
-
-    D3DXMatrixTransformation(sphere->WorldMatrix(), NULL, NULL, NULL, NULL, NULL, &D3DXVECTOR3(100,200,0));
-    D3DXMatrixTransformation(testMesh->WorldMatrix(), NULL, NULL, NULL, NULL, NULL, &D3DXVECTOR3(0,300,0));
-    D3DXMATRIX scaling;
-    D3DXMatrixScaling(&scaling, 0.5f, 0.5f, 0.5f);
-    D3DXMATRIX rot;
-    //D3DXMatrixRotationZ(&rot, sphereRot);
-
-
-
-
-    //D3DXMatrixRotationZ(testMesh->WorldMatrix(), -sphereRot);
+    D3DXMatrixTransformation(sphere->WorldMatrix(), NULL, NULL, NULL, NULL, NULL, &light.position);
+    D3DXMatrixTransformation(testMesh->WorldMatrix(), NULL, NULL, NULL, NULL, NULL, &D3DXVECTOR3(0,-20,0));
+  
 
     pD3DDevice->ClearRenderTargetView( pRenderTargetView, D3DXCOLOR(0,0,0,0));
     pD3DDevice->ClearDepthStencilView( pDepthStencilView, D3D10_CLEAR_DEPTH, 1.0f, 0 );
+
     UINT subsets = 0;
 
-   //pWorldMatrixEffectVar->SetMatrix(worldMatrix);
-    
-    
+    D3DXMATRIX worldITX;
 
     for(UINT pass = 0; pass < techDesc.Passes; pass++)
     {
-        pTextureSR->SetResource(floorTexture);
-        pWorldMatrixEffectVar->SetMatrix((*testMesh->WorldMatrix()));
-        pBasicTechnique->GetPassByIndex(0)->Apply(0);
-
-        testMesh->GetMesh()->GetAttributeTable(NULL, &subsets);
-
-        for(UINT subset = 0; subset < subsets; subset++)
-        {
-            testMesh->GetMesh()->DrawSubset(subset);
-        }  
-
-
-
-
-     
-    }
-        pTextureSR->SetResource(floorTexture);
-        pWorldMatrixEffectVar->SetMatrix((*sphere->WorldMatrix())); 
+        
+        pWorldMatrixEffectVar->SetMatrix((*sphere->WorldMatrix()));
+        D3DXMatrixInverse(sphere->WorldMatrix(), NULL, &worldITX);
+        D3DXMatrixTranspose(&worldITX, &worldITX);
+        pWorldInverseTransposeEffectVar->SetMatrix(worldITX);
+        
         pBasicTechnique->GetPassByIndex(0)->Apply(0);
         
         
@@ -297,6 +282,25 @@ void DXManager::Render()
         {
             sphere->GetMesh()->DrawSubset(subset);
         }
+        
+        D3DXMatrixInverse(testMesh->WorldMatrix(), NULL, &worldITX);
+        D3DXMatrixTranspose(&worldITX, &worldITX);
+        pWorldInverseTransposeEffectVar->SetMatrix(worldITX);
+        pWorldMatrixEffectVar->SetMatrix(worldMatrix);
+
+        pBasicTechnique->GetPassByIndex(0)->Apply(0);
+
+        testMesh->GetMesh()->GetAttributeTable(NULL, &subsets);
+
+        for(UINT subset = 0; subset < subsets; subset++)
+        {
+            testMesh->GetMesh()->DrawSubset(subset);
+        }  
+    }
+
+            //pTextureSR->SetResource(floorTexture);
+
+
 
     pSwapChain->Present(0,0);
 
@@ -310,10 +314,10 @@ bool DXManager::FatalError(LPCSTR msg)
 
 bool DXManager::LoadTextures()
 {
-    if(FAILED(D3DX10CreateShaderResourceViewFromFile(pD3DDevice, "../assets/marblefloor.jpg", NULL, NULL, &floorTexture, NULL)))
+    if(FAILED(D3DX10CreateShaderResourceViewFromFile(pD3DDevice, "../assets/metal_color.bmp", NULL, NULL, &floorTexture, NULL)))
     {
         char err[256];
-        sprintf_s(err, "Could not load texture: %s!","../assets/marblefloor.jpg");
+        sprintf_s(err, "Could not load texture: %s!","../assets/metal_color.bmp");
         return FatalError(err);
     }
     return true;

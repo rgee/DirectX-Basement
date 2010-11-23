@@ -5,6 +5,7 @@
 #include <d3d10.h>
 #include <d3dx10.h>
 #include <stdio.h>
+#include <vector>
 #include "vertex.h"
 
 
@@ -19,15 +20,13 @@ public:
           pDevice(pDevice)
     {
         // Allocate memory for vertices
-        vertices = new vertex[width*depth];
-        indices = new unsigned int[width * depth * 6];
+        //vertices = new vertex[width*depth];
+        //indices = new unsigned int[width * depth * 6];
         GenerateMesh();
     }
 
     ~Terrain()
     {
-        delete[] vertices;
-        delete[] indices;
         if(pMesh)
         {
             pMesh->Release();
@@ -46,8 +45,6 @@ private:
     int fieldWidth;
     int fieldDepth;
     float cellSpacing;
-    vertex* vertices;
-    unsigned int* indices;
 
     D3DXMATRIX positionMatrix;
     ID3D10Device* pDevice;

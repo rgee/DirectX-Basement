@@ -11,11 +11,13 @@ const D3DXVECTOR4 DRK_BLUE(0.25f, 0.39f, 0.80f, 1.0f);
 
 float Terrain::GetHeight(float x, float z) const
 {
-    return 0.3f * ( z * sinf(0.1f * x) + x * cosf(0.1f * z) );
+    return 0.0f;
+    //return 0.3f * ( z * sinf(0.1f * x) + x * cosf(0.1f * z) );
 }
 
 void Terrain::GenerateMesh()
 {
+    /*
     float halfWidth = (fieldWidth - 1) * cellSpacing * 0.5f;
     float halfDepth = (fieldDepth - 1) * cellSpacing * 0.5f;
 
@@ -31,8 +33,10 @@ void Terrain::GenerateMesh()
             D3DXVECTOR4 transformed;
             D3DXVec3Transform(&transformed, &D3DXVECTOR3(x, y, z), &positionMatrix);
             vertices[int(i * fieldWidth + j)].position = D3DXVECTOR3(transformed.x, transformed.y, transformed.z);
+            vertices[int(i * fieldWidth + j)].normal = D3DXVECTOR3(0, 1, 0);
+            vertices[int(i * fieldWidth + j)].texCoord = D3DXVECTOR2(0,1);
 
-            /*
+            
             if(y < -15.0f) {
                 vertices[int(i * fieldDepth + j)].color = DRK_BLUE;
             } else if( y < -5.0f) {
@@ -46,7 +50,7 @@ void Terrain::GenerateMesh()
             } else {
                 vertices[int(i * fieldDepth + j)].color = WHITE;
             }
-            */
+            
             
         }
     }
@@ -66,11 +70,39 @@ void Terrain::GenerateMesh()
             k += 6;
         }
     }
+    */    
+    
+    std::vector<vertex> vertices(4);
+    std::vector<unsigned int> indices(6);
 
-    D3DX10CreateMesh(pDevice, layout, 2, "POSITION", (fieldWidth * fieldDepth), ((fieldWidth-1) * (fieldDepth-1)) * 2, D3DX10_MESH_32_BIT, &pMesh);
+    vertices[0].position = D3DXVECTOR3(-1.0f, 1.0f, 0.0f );
+    vertices[0].texCoord = D3DXVECTOR2(0.0f, 0.0f);
+    vertices[0].normal = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
 
-    pMesh->SetVertexData(0, vertices);
-    pMesh->SetIndexData(indices, fieldWidth * fieldDepth * 6);
+    vertices[1].position = D3DXVECTOR3(1.0f, 1.0f, 0.0f);
+    vertices[1].texCoord = D3DXVECTOR2(1.0f, 0.0f);
+    vertices[1].normal = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+
+    vertices[2].position = D3DXVECTOR3(1.0f, -1.0f, 0.0f);
+    vertices[2].texCoord = D3DXVECTOR2(1.0f, 1.0f);
+    vertices[2].normal = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+
+    vertices[3].position = D3DXVECTOR3(-1.0f, -1.0f, 0.0f);
+    vertices[3].texCoord = D3DXVECTOR2(0.0f, 1.0f);
+    vertices[3].normal = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
+
+    indices[0] = 0;
+    indices[1] = 1;
+    indices[2] = 2;
+    indices[3] = 2;
+    indices[4] = 3;
+    indices[5] = 0;
+
+
+    D3DX10CreateMesh(pDevice, layout, sizeof(layout)/sizeof(layout[0]), layout[0].SemanticName, vertices.size(), 2, D3DX10_MESH_32_BIT, &pMesh);
+
+    pMesh->SetVertexData(0, &vertices[0]);
+    pMesh->SetIndexData(&indices[0], 6);
     pMesh->CommitToDevice();
 }
 

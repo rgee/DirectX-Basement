@@ -28,6 +28,8 @@ public:
     D3DXMATRIX* GetProjectionMatrix();
     D3DXMATRIX* GetViewMatrix();
     D3DXMATRIX* GetRotationMatrix();
+
+    D3DXVECTOR3 GetPosition();
 private:
     float yaw, pitch;
 

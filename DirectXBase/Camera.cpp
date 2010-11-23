@@ -27,27 +27,34 @@ Camera::Camera()
     movementToggles[3] = 0;
 }
 
+D3DXVECTOR3 Camera::GetPosition()
+{
+    return eye;
+}
+
 void Camera::AdjustYawPitch(float newYaw, float newPitch)
 {
     yaw += newYaw;
     pitch += newPitch;
 
-    if(yaw > 2*D3DX_PI)
+    float two_pi = 2 * D3DX_PI;
+
+    if(yaw > two_pi)
     {
-        yaw -= (float)D3DX_PI*2;
+        yaw -= two_pi;
     } 
     else if (yaw < 0)
     {
-        yaw = (float)(D3DX_PI*2) + yaw;
+        yaw = two_pi + yaw;
     }
 
-    if(pitch > 2*D3DX_PI)
+    if(pitch > two_pi)
     {
-        pitch -= (float)D3DX_PI*2;
+        pitch -= two_pi;
     }
     else if(pitch < 0)
     {
-        pitch = (float)(D3DX_PI*2) + pitch;
+        pitch = two_pi + pitch;
     }
 }
 

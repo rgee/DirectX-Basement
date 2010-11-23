@@ -73,6 +73,9 @@ private:
     ID3D10EffectMatrixVariable* pViewMatrixEffectVar;
     ID3D10EffectMatrixVariable* pProjMatrixEffectVar;
     ID3D10EffectMatrixVariable* pWorldMatrixEffectVar;
+    ID3D10EffectMatrixVariable* pWorldInverseTransposeEffectVar;
+    ID3D10EffectVariable* LightVar;
+
 
     /* Essential matrices */
     D3DXMATRIX viewMatrix;
@@ -91,6 +94,8 @@ private:
     Terrain* pTerrain;
 
     RAWINPUTDEVICE rid[2];
+
+    PointLight light;
 
     Mesh* testMesh;
     Mesh* sphere;

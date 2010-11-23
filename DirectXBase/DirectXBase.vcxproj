@@ -92,6 +92,7 @@
     <ClInclude Include="EventManager.h" />
     <ClInclude Include="Events.h" />
     <ClInclude Include="HashedString.h" />
+    <ClInclude Include="Light_Types.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="MHRTimer.h" />
     <ClInclude Include="Terrain.h" />
